@@ -1,0 +1,68 @@
+---
+title: "World Happiness Report 2021"
+author: "Elena Civati"
+date: "5/7/2021"
+subtitle: "(Use arrows to navigate)"
+output: 
+    ioslides_presentation: 
+      widescreen: yes
+      df_print: paged
+      fig_width: 10
+      fig_height: 6
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## {.flexbox .vcenter}
+
+The dataset I used can be found at  [Kaggle](https://www.kaggle.com/ajaypalsinghlo/world-happiness-report-2021?select=world-happiness-report-2021.csv), while the complete report is at https://worldhappiness.report/ed/2021/.   
+
+You can find R Markdown code generating this presentation [in this GitHub Repo](https://github.com/Elenena/WorldHappinessReport).  
+
+## 
+
+In brief, the World Happiness Report is a landmark survey of the state of happiness in 149 countries. The report continues to gain global recognition as governments, organizations and civil society increasingly use happiness indicators to inform their policy-making decisions.  
+The happiness measured scores depends on six factors:  
+
+- Economic production
+- Social support
+- Life expectancy
+- Freedom
+- Absence of corruption
+- Generosity  
+
+
+## {.smaller}
+
+In this table, you can see the data I worked with, sorted from the happiest to the least happy country.
+
+```{r results='asis'}
+happy<-read.csv("happy.csv")
+happy<-happy[,c(1,3,14:19)]
+colnames(happy)<-c("Country", "Score", "Economic prod", "Social support", "Life exp", "Freedom", "Abs of corruption", "Generosity")
+happy
+
+
+```
+
+
+
+
+## {.smaller}
+In this plot, you can see the ranking with each factor's contribution (hover on the plot for details). *(Note: the total score doesn't results from the bare sum of the single contribution, see [Kaggle](https://www.kaggle.com/ajaypalsinghlo/world-happiness-report-2021?select=world-happiness-report-2021.csv) for details)*
+
+```{r message=F, warning=F}
+library(plotly)
+library(reshape2)
+happy<-happy[order(happy$Score),]
+happy$total<-rowSums(happy[,3:8])
+df<-melt(happy, id.vars=c(1,2,9), measure.vars = c(3:8), variable.name = "Factor")
+df$Country <- factor(df$Country, levels = unique(df[["Country"]]))
+df$perc=df$value/df$total*df$Score
+
+fig<-plot_ly(df,y=~Country, x=~perc, type="bar", color = ~Factor)
+layout(fig, barmode="stack", title="Official 2021 World Happiness Ranking", xaxis=list(title="Happiness Score"), hovermode="compare")
+```
+
